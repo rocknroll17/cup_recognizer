@@ -32,35 +32,42 @@ def query_cup(cur, conn, cup):
     cur.execute('SELECT name FROM qr WHERE qr_code = ?', (cup,))
     result = cur.fetchone()[0]
     return result[0] if result else None
+if 1:
+    time.sleep(2)
+    cap = cv2.VideoCapture(0)
+    cap.set(3, 640)
+    cap.set(4, 480)
 
-cap = cv2.VideoCapture(0)
-cap.set(3, 640)
-cap.set(4, 480)
-while 1:
-    success, frame = cap.read()
-    if not success or frame is None:
-        print("프레임을 읽지 못했습니다.")
-        continue
-    for code in pyzbar.decode(frame):
-        my_code = code.data.decode('utf-8')
-        print("인식 성공 : ", my_code)
-        if query_cup(cur, conn, my_code):
-            name = return_cup(cur,conn, my_code)
-            print(name+"의 컵이 반납되었습니다.")
-        else:
-            name = str(random.randint(1,10))
-            deploy_cup(cur,conn, my_code, name)
-            print(name+"의 컵이 대여되었습니다.")
-                    
-        # QR 코드 인식 후 OpenCV 창을 닫음
-        cap.release()
-        cv2.destroyAllWindows()
-        break
+    while not recog:
+        success, frame = cap.read()
+        if not success:
+            print("인식이 잘못 되었습니다.")
+            break
 
-    cv2.imshow('cup qr code recognizer', frame)
-    if cv2.waitKey(1) & 0xFF == ord('q'):
-        pass
+        for code in pyzbar.decode(frame):
+            my_code = code.data.decode('utf-8')
+            print("인식 성공 : ", my_code)
+            if query_cup(cur, conn, my_code):
+                name = return_cup(cur,conn, my_code)
+                print(name+"의 컵이 반납되었습니다.")
+            else:
+                name = str(random.randint(1,10))
+                deploy_cup(cur,conn, my_code, name)
+                print(name+"의 컵이 대여되었습니다.")
+            recog = True
+                
+            # QR 코드 인식 후 OpenCV 창을 닫음
+            cap.release()
+            cv2.destroyAllWindows()
+            break
+
+        cv2.imshow('cup qr code recognizer', frame)
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            recog = True  # 'q' 키를 누르면 루프를 종료
 
     # 내부 while 루프 종료 시 OpenCV 창 닫기
     cap.release()
     cv2.destroyAllWindows()
+
+# 외부 while 루프 종료 시 모든 자원 해제
+cv2.destroyAllWindows()
