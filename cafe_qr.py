@@ -13,13 +13,13 @@ def delete_cup():
     pass
 
 def deploy_cup(cur, conn, cup, name):
-    cur.execute('UPDATE qr SET name = '+name+' WHERE qr_code = '+cup)
+    cur.execute('UPDATE qr SET name = ? WHERE qr_code = ?', (name, cup))
     conn.commit()
 
 def return_cup(cur, conn, cup):
-    cur.execute('SELECT name FROM qr WHERE qr_code = '+cup)
+    cur.execute('SELECT name FROM qr WHERE qr_code = ?', (cup,))
     result = cur.fetchone()[0]
-    cur.execute('UPDATE qr SET name = NULL WHERE qr_code = '+cup)
+    cur.execute('UPDATE qr SET name = NULL WHERE qr_code = ?', (cup,))
     conn.commit()
     return result
 #해당 코드는 아직 해당 qr code가 존재하는 코드인지 인식하지 못함.
