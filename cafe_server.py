@@ -35,7 +35,7 @@ async def create_button(request: Request):
     global buttons
     data = await request.json()
     username = data.get("username")
-    buttons.append({"username": username})
+    buttons.append(username)
     return JSONResponse(content={"message": "Button created successfully"})
 
 if __name__ == "__main__":

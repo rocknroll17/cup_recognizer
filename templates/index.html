@@ -19,14 +19,15 @@
         buttonContainer.innerHTML = "";
 
         // 버튼 데이터의 수만큼 동적으로 버튼 생성
-        buttonsData.forEach(button => {
+        buttonsData.forEach(username => {
             const newButton = document.createElement("button");
-            newButton.textContent = button.username;
+            newButton.textContent = username;
+
+            // 클릭 이벤트 핸들러 할당
             newButton.onclick = function() {
-                newButton.onclick = function() {
-                    sendPostRequest(button.username);
-                };
+                sendPostRequest(username);
             };
+
             buttonContainer.appendChild(newButton);
         });
     }
