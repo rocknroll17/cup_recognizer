@@ -21,7 +21,7 @@
         // 버튼 데이터의 수만큼 동적으로 버튼 생성
         buttonsData.forEach(button => {
             const newButton = document.createElement("button");
-            newButton.textContent = "Click me: " + button.username;
+            newButton.textContent = button.username;
             newButton.onclick = function() {
                 newButton.addEventListener('click', () => buttonClickHandler(button.username));
                 buttonContainer.appendChild(newButton);
@@ -34,7 +34,7 @@
         window.onload = updateButtons;
         window.onload = function() {
             updateButtons();
-            setInterval(updateButtons, 2000); // 5초마다 업데이트
+            setInterval(updateButtons, 500);
         };
 
     </script>

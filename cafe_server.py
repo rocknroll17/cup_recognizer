@@ -1,20 +1,22 @@
 from fastapi import FastAPI, Request
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.responses import JSONResponse
 from fastapi.templating import Jinja2Templates
 
 # FastAPI 앱 생성
 app = FastAPI()
 
-# 템플릿 디렉토리 설정
-templates = Jinja2Templates(directory="templates")
-
 # 현재 버튼 목록
 buttons = []
-
+templates = Jinja2Templates(directory="templates")
 # 현재 버튼 목록을 반환하는 핸들러 함수 정의
-@app.get("/", response_class=HTMLResponse)
-async def read_buttons(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request, "buttons": buttons})
+@app.get("/")
+async def index(request: Request):
+    return templates.TemplateResponse("index.html", {"request": request})
+
+@app.get("/button")
+async def read_button(request: Request):
+    global buttons
+    return buttons
 
 # 외부에서의 POST 요청을 받아 새로운 버튼을 추가하는 핸들러 함수 정의
 @app.post("/")
