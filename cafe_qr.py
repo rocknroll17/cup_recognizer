@@ -35,6 +35,7 @@ def qr_reading(name):
     cap.set(3, 640)
     cap.set(4, 480)
     recog = False
+    cv2.namedWindow('cup qr code recognizer', cv2.WINDOW_NORMAL)
     while 1:
         success, frame = cap.read()
         if not success:
@@ -61,7 +62,7 @@ def qr_reading(name):
             break
         
                 
-
+        cv2.setWindowProperty('cup qr code recognizer', cv2.WND_PROP_TOPMOST, 1)
         cv2.imshow('cup qr code recognizer', frame)
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
