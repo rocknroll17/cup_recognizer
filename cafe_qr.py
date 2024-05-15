@@ -66,4 +66,4 @@ def qr_reading(name):
         cv2.imshow('cup qr code recognizer', frame)
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
-    return result
+    return 0

@@ -16,4 +16,4 @@ def qr_reader():
     qr.instance()
 
 if __name__ == "__main__":
-    uvicorn.run("return_server:app", host="0.0.0.0", port=8080, reload=True)
+    uvicorn.run("return_server:app", host="0.0.0.0", port=4440, reload=True)
