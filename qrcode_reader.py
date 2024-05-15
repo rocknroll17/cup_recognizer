@@ -9,9 +9,8 @@ conn = sqlite3.connect('qr.db')
 cur = conn.cursor()
 
 def new_cup(cur, conn, qr_code):
-    qr_text = input("생성할 컵의 qr_text를 입력하세요: ")
-    qr_code_generater.generate_qr_code(qr_text)
-    cur.execute('INSERT INTO qr (qr_code, name) VALUES (?, ?)', (qr_code, name))
+    qr_code_generater.generate_qr_code(qr_code)
+    cur.execute('INSERT INTO qr (qr_code, name) VALUES (?, ?)', (qr_code, None))
     conn.commit()
 
 def delete_cup():
@@ -33,7 +32,7 @@ def query_cup(cur, conn, cup):
     cur.execute('SELECT name FROM qr WHERE qr_code = ?', (cup,))
     result = cur.fetchone()[0]
     return result[0] if result else None
-
+new_cup(cur,conn,'4')
 while True:
     recog = False
     #option = input("옵션을 선택하세요 (1: QR 코드 인식 시작, 기타: 종료): ")

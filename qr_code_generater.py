@@ -1,7 +1,7 @@
 import qrcode
 import os
 
-def generate_qr_code(cur, conn, qr_text):
+def generate_qr_code(qr_text):
     file_name = qr_text+".png"
     # QR 코드 생성
     qr = qrcode.QRCode(
