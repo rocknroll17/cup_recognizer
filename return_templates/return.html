@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Return</title>
+</head>
+<body>
+    <h1>Return page</h1>
+    <<button id="sendPostRequest">Send POST Request to /return/bottles</button>
+
+    <script>
+        document.getElementById("sendPostRequest").addEventListener("click", function() {
+            fetch("/qr_reader", {
+                method: "POST"
+            }).then(response => {
+                if (response.ok) {
+                    console.log("POST request sent successfully!");
+                } else {
+                    console.error("Failed to send POST request.");
+                }
+            }).catch(error => {
+                console.error("Error occurred while sending POST request:", error);
+            });
+        });
+    </script>
+</body>
+</html>
