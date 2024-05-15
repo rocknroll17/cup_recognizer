@@ -3,9 +3,19 @@ import pyzbar.pyzbar as pyzbar
 import sqlite3
 import random
 import time
+import qr_code_generater
 
 conn = sqlite3.connect('qr.db')
 cur = conn.cursor()
+
+def new_cup(cur, conn, qr_code):
+    qr_text = input("생성할 컵의 qr_text를 입력하세요: ")
+    qr_code_generater.generate_qr_code(qr_text)
+    cur.execute('INSERT INTO qr (qr_code, name) VALUES (?, ?)', (qr_code, name))
+    conn.commit()
+
+def delete_cup():
+    pass
 
 def deploy_cup(cur, conn, cup, name):
     cur.execute('UPDATE qr SET name = '+name+' WHERE qr_code = '+cup)
@@ -17,17 +27,18 @@ def return_cup(cur, conn, cup):
     cur.execute('UPDATE qr SET name = NULL WHERE qr_code = '+cup)
     conn.commit()
     return result
-
+#해당 코드는 아직 해당 qr code가 존재하는 코드인지 인식하지 못함.
+#없으면 null이라 그럼
 def query_cup(cur, conn, cup):
     cur.execute('SELECT name FROM qr WHERE qr_code = ?', (cup,))
     result = cur.fetchone()[0]
-    return result
+    return result[0] if result else None
 
 while True:
     recog = False
     #option = input("옵션을 선택하세요 (1: QR 코드 인식 시작, 기타: 종료): ")
     if 1:#option == "1"
-        time.sleep(3)
+        time.sleep(2)
         cap = cv2.VideoCapture(0)
         cap.set(3, 640)
         cap.set(4, 480)
