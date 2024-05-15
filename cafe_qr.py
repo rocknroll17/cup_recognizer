@@ -53,6 +53,8 @@ def qr_reading():
                 break
             else:
                 print("Error: 반납처리 되지 않은 컵입니다.")
+                cap.release()
+                cv2.destroyAllWindows()
                 recog = True
         if recog:
             break
