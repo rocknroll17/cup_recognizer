@@ -23,20 +23,33 @@
             const newButton = document.createElement("button");
             newButton.textContent = button.username;
             newButton.onclick = function() {
-                newButton.addEventListener('click', () => buttonClickHandler(button.username));
-                buttonContainer.appendChild(newButton);
+                newButton.onclick = function() {
+                    sendPostRequest(button.username);
+                };
             };
             buttonContainer.appendChild(newButton);
         });
-}
+    }
 
         // 페이지 로드 시 서버에서 버튼 목록을 가져와서 페이지를 업데이트함
         window.onload = updateButtons;
         window.onload = function() {
             updateButtons();
-            setInterval(updateButtons, 500);
+            setInterval(updateButtons, 1000);
         };
+        // 클릭한 버튼의 사용자 이름을 가지고 POST 요청 보내는 함수
+        async function sendPostRequest(username) {
+            const response = await fetch("/qr_code", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ username })
+            });
 
+            const responseData = await response.json();
+            console.log(responseData); // 서버로부터 받은 응답 데이터 로깅
+        }
     </script>
 </body>
 </html>

@@ -1,6 +1,7 @@
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from fastapi.templating import Jinja2Templates
+import cafe_qr
 
 # FastAPI 앱 생성
 app = FastAPI()
@@ -18,10 +19,12 @@ async def read_button(request: Request):
     global buttons
     return buttons
 
-@app.get("/qr_code")
+@app.post("/qr_code")
 async def qr_recognizer(request: Request):
     data = await request.json()
     username = data.get("username")
+    cafe_qr.qr_reading()
+
 
 # 외부에서의 POST 요청을 받아 새로운 버튼을 추가하는 핸들러 함수 정의
 @app.post("/")
