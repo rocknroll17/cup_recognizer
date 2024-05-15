@@ -61,3 +61,7 @@ def instance():
                 recog = True
         if recog:
             break
+        cv2.imshow('cup qr code recognizer', frame)
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+    return result
