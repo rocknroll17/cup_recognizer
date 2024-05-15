@@ -32,7 +32,6 @@ def query_cup(cur, conn, cup):
     cur.execute('SELECT name FROM qr WHERE qr_code = ?', (cup,))
     result = cur.fetchone()[0]
     return result[0] if result else None
-new_cup(cur,conn,'4')
 while True:
     recog = False
     #option = input("옵션을 선택하세요 (1: QR 코드 인식 시작, 기타: 종료): ")

@@ -18,6 +18,11 @@ async def read_button(request: Request):
     global buttons
     return buttons
 
+@app.get("/qr_code")
+async def qr_recognizer(request: Request):
+    data = await request.json()
+    username = data.get("username")
+
 # 외부에서의 POST 요청을 받아 새로운 버튼을 추가하는 핸들러 함수 정의
 @app.post("/")
 async def create_button(request: Request):
