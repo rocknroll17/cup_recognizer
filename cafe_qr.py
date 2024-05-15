@@ -28,7 +28,7 @@ def query_cup(cur, conn, cup):
     cur.execute('SELECT name FROM qr WHERE qr_code = ?', (cup,))
     result = cur.fetchone()[0]
     return result[0] if result else None
-def qr_reading():
+def qr_reading(name):
     conn = sqlite3.connect('qr.db')
     cur = conn.cursor()
     cap = cv2.VideoCapture(0)
@@ -44,22 +44,25 @@ def qr_reading():
             my_code = code.data.decode('utf-8')
             print("인식 성공 : ", my_code)
             if not query_cup(cur, conn, my_code):
-                name = str(random.randint(1,10))
                 deploy_cup(cur,conn, my_code, name)
                 print(name+"의 컵이 대여되었습니다.")
                 cap.release()
                 cv2.destroyAllWindows()
+                result = True
                 recog = True
                 break
             else:
                 print("Error: 반납처리 되지 않은 컵입니다.")
                 cap.release()
                 cv2.destroyAllWindows()
+                result = False
                 recog = True
         if recog:
             break
+        
                 
 
         cv2.imshow('cup qr code recognizer', frame)
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
+    return result

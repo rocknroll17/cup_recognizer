@@ -23,7 +23,10 @@ async def read_button(request: Request):
 async def qr_recognizer(request: Request):
     data = await request.json()
     username = data.get("username")
-    cafe_qr.qr_reading()
+    result = cafe_qr.qr_reading(username)
+    if result:
+        global buttons
+        buttons.remove(username)
 
 
 # 외부에서의 POST 요청을 받아 새로운 버튼을 추가하는 핸들러 함수 정의
