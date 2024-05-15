@@ -58,6 +58,7 @@ def instance():
             else:
                 cap.release()
                 cv2.destroyAllWindows()
+                result = False
                 recog = True
         if recog:
             break
