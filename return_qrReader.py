@@ -1,8 +1,6 @@
 import cv2
 import pyzbar.pyzbar as pyzbar
 import sqlite3
-import random
-import time
 import qr_code_generater
 
 conn = sqlite3.connect('qr.db')
