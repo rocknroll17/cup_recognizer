@@ -47,13 +47,15 @@ def instance():
             my_code = code.data.decode('utf-8')
             print("인식 성공 : ", my_code)
             if query_cup(cur, conn, my_code):
-                print("컵이 반납되었습니다.")
+                name = return_cup(cur, conn, my_code)
+                print(name+"의 컵이 반납되었습니다.")
                 cap.release()
                 cv2.destroyAllWindows()
                 result = True
                 recog = True
                 break
             else:
+                print("Error: 대여 처리 되지 않은 컵입니다.")
                 cap.release()
                 cv2.destroyAllWindows()
                 result = False

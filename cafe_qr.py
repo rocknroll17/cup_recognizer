@@ -53,7 +53,7 @@ def qr_reading(name):
                 recog = True
                 break
             else:
-                print("Error: 반납처리 되지 않은 컵입니다.")
+                print("Error: 반납 처리 되지 않은 컵입니다.")
                 cap.release()
                 cv2.destroyAllWindows()
                 result = False
@@ -67,3 +67,5 @@ def qr_reading(name):
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
     return 0
+if __name__ == "__main__":
+    qr_reading("user"+str(random.randint(1,10)))
