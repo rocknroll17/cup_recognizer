@@ -151,9 +151,9 @@ class MyApp(QWidget):
         self.qr_label.hide()
         self.stop_qr_scanner()
         if response.status_code == 200:
-            self.result_label.setText(f"컵이 반납되었습니다: {qr_data}")
+            self.result_label.setText("컵이 반납되었습니다!!")
         elif response.status_code == 400:
-            self.result_label.setText(f"연체 되었습니다: {qr_data}")
+            self.result_label.setText("연체 되었습니다")
         else:
             self.result_label.setText("대여되지 않은 컵입니다.")
         self.result_label.show()
