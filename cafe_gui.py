@@ -3,7 +3,7 @@ import cv2
 import threading
 from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel, QGroupBox, QGridLayout
 from PyQt5.QtCore import pyqtSlot, Qt, QTimer, QThread, pyqtSignal
-from PyQt5.QtGui import QImage, QPixmap
+from PyQt5.QtGui import QImage, QPixmap, QFontDatabase, QFont
 from pyzbar import pyzbar
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
@@ -129,7 +129,7 @@ class MyApp(QWidget):
         self.main_layout.addLayout(self.left_layout)
         self.main_layout.addLayout(self.right_layout)
         self.setLayout(self.main_layout)
-        self.setWindowTitle('컵 대여기')
+        self.setWindowTitle('')
         self.setGeometry(100, 100, 800, 600)
         self.setStyleSheet("background-color: white")  
         self.show()
@@ -198,6 +198,7 @@ class MyApp(QWidget):
         group_box = QGroupBox(self)
         group_box.setProperty("order_info", order)
         group_box.setStyleSheet("background-color : khaki")
+        group_box.setFixedSize(1000, 200)
 
         layout = QGridLayout()
 
@@ -255,5 +256,8 @@ class MyApp(QWidget):
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
+    fontDb=QFontDatabase()
+    fontDb.addApplicationFont("./font/gamtan_regular.ttf")
+    app.setFont(QFont('gamtan_regular'))
     ex = MyApp()
     sys.exit(app.exec_())
