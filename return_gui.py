@@ -2,11 +2,10 @@ import sys
 import cv2
 import threading
 from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QPushButton, QLabel, QHBoxLayout
-from PyQt5.QtCore import pyqtSlot, Qt, QMetaObject, Q_ARG, QThread, pyqtSignal
+from PyQt5.QtCore import pyqtSlot, Qt, QMetaObject, Q_ARG, QThread, pyqtSignal, QTimer
 from PyQt5.QtGui import QImage, QPixmap
 from pyzbar import pyzbar
 import requests
-import qr_reader
 
 class QRScannerThread(QThread):
     qr_data_found = pyqtSignal(str)
@@ -64,7 +63,7 @@ class MyApp(QWidget):
 
         # '배정' 버튼 생성 및 추가
         self.assign_button = QPushButton('반납하기', self)
-        self.assign_button.setFixedSize(150, 50)
+        self.assign_button.setFixedSize(300, 100)
         self.assign_button.clicked.connect(self.show_qr_message)
         self.central_layout.addWidget(self.assign_button)
 
@@ -74,17 +73,17 @@ class MyApp(QWidget):
         self.qr_label.hide()
         self.central_layout.addWidget(self.qr_label)
 
-        self.next_button = QPushButton('다음', self)
-        self.next_button.setFixedSize(150, 50)
-        self.next_button.clicked.connect(self.show_assign_button)
-        self.next_button.hide()
-        self.central_layout.addWidget(self.next_button)
-
         # QR 코드 인식 결과 라벨
         self.result_label = QLabel('', self)
         self.result_label.setAlignment(Qt.AlignCenter)
         self.result_label.hide()
         self.central_layout.addWidget(self.result_label)
+
+        self.next_button = QPushButton('처음으로', self)
+        self.next_button.setFixedSize(150, 50)
+        self.next_button.clicked.connect(self.show_assign_button)
+        self.next_button.hide()
+        self.central_layout.addWidget(self.next_button)
 
         # 비디오 프레임을 표시할 라벨
         self.video_label = QLabel(self)
@@ -99,10 +98,14 @@ class MyApp(QWidget):
         # 레이아웃을 윈도우에 설정
         self.setLayout(self.main_layout)
 
+        self.timer = QTimer(self)
+        self.timer.setSingleShot(True)  # 타이머가 한 번만 작동하도록 설정
+        self.timer.timeout.connect(self.show_assign_button)  # 타이머가 만료되면 show_assign_button 메서드 호출
+
         # 윈도우 속성 설정
         self.setWindowTitle('반납기')
         self.setGeometry(300, 300, 300, 400)
-        self.show()
+        self.showMaximized()
 
     @pyqtSlot()
     def show_qr_message(self):
@@ -117,12 +120,14 @@ class MyApp(QWidget):
     @pyqtSlot()
     def show_assign_button(self):
         # QR 코드 안내 문구와 '다음' 버튼을 숨기고, '배정' 버튼을 보이게 함
+        self.timer.stop()
         self.qr_label.hide()
         self.next_button.hide()
         self.result_label.hide()
         self.video_label.hide()
         self.assign_button.show()
         self.stop_qr_scanner()
+        cv2.destroyAllWindows()
 
     def start_qr_scanner(self):
         self.qr_scanner_thread.start_scanning()
@@ -132,26 +137,35 @@ class MyApp(QWidget):
 
     @pyqtSlot(QImage)
     def update_video_frame(self, qt_image):
+        # 비디오 프레임을 QLabel에 표시합니다.
         self.video_label.setPixmap(QPixmap.fromImage(qt_image))
+
+        # 비디오 프레임에 맞게 QLabel의 크기를 조정합니다.
+        self.video_label.setFixedSize(qt_image.width(), qt_image.height())
 
     @pyqtSlot(str)
     def update_result_label(self, qr_data):
         response = requests.post("http://10.210.56.158:5000/api/qr/"+qr_data)
+        self.qr_label.hide()
         if response.status_code == 200:
             self.result_label.setText(f"컵이 반납되었습니다: {qr_data}")
         else:
-            print("이미 대여되지 않은 컵입니다.")
-        """if qr_reader.query_cup(qr_reader.cur, qr_reader.conn, qr_data):
-            qr_reader.return_cup(qr_reader.cur, qr_reader.conn, qr_data)
-            self.result_label.setText(f"컵이 반납되었습니다: {qr_data}")
-        else:
-            self.result_label.setText("대여되지 않은 컵입니다.")"""
+            self.result_label.setText("대여되지 않은 컵입니다.")
         self.result_label.show()
         self.video_label.hide()
+        self.timer.start(6000)
 
     def closeEvent(self, event):
+        sys.exit()
+        """self.timer.stop()
         self.stop_qr_scanner()
+        self.qr_scanner_thread.quit()  # 스레드 종료 요청
+        self.qr_scanner_thread.wait()  # 스레드가 종료될 때까지 대기
         event.accept()
+        cv2.destroyAllWindows()  # OpenCV 윈도우 닫기"""
+
+
+
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)

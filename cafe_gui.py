@@ -11,7 +11,6 @@ from fastapi.templating import Jinja2Templates
 from fastapi.middleware.cors import CORSMiddleware
 import requests
 import uvicorn
-import qr_reader
 import time
 
 # FastAPI 앱 생성
@@ -124,7 +123,7 @@ class MyApp(QWidget):
         self.main_layout.addLayout(self.left_layout)
         self.main_layout.addLayout(self.right_layout)
         self.setLayout(self.main_layout)
-        self.setWindowTitle('QR 코드 인식기')
+        self.setWindowTitle('컵 대여기')
         self.setGeometry(100, 100, 800, 600)
         self.show()
 
