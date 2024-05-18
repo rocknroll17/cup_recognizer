@@ -52,14 +52,12 @@ async def create_button(request: Request):
     global orders
     datareq = await request.json()
     datareq = datareq.get("orderItems")
-    print(datareq)
     for i in datareq:
         id = i.get("id")
         name = i.get("name")
         original_price = i.get("original_price")
         price = i.get("price")
         orders.append(Order(id, name, original_price, price))
-        print(orders)
     return JSONResponse(content={"message": "Button created successfully"})
 
 # OpenCV QR 코드 스캐너 스레드
@@ -274,7 +272,6 @@ if __name__ == '__main__':
      fontDb.addApplicationFont(os.path.join("font",f"gamtan_regular.ttf"))
      # Set application font
      font = QFont("gamtan_regular",20,20,False)
-     print(font.toString())
      app.setFont(font)
      
      ex = MyApp()
