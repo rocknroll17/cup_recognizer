@@ -197,7 +197,7 @@ class MyApp(QWidget):
     def add_order_widget(self, order):
         group_box = QGroupBox(self)
         group_box.setProperty("order_info", order)
-        group_box.setStyleSheet("background-color : darkkhaki")
+        group_box.setStyleSheet("background-color : khaki")
 
         layout = QGridLayout()
 
@@ -207,7 +207,7 @@ class MyApp(QWidget):
         if os.path.exists(image_path): 
             image_label = QLabel(self)
             pixmap = QPixmap(image_path)
-            image_label.setPixmap(pixmap.scaled(100, 100, Qt.KeepAspectRatio))
+            image_label.setPixmap(pixmap.scaled(200, 200, Qt.KeepAspectRatio))
             layout.addWidget(image_label, 0, 0)
         else:
             print(f"Image not found: {image_path}")
@@ -221,10 +221,14 @@ class MyApp(QWidget):
         layout.addWidget(QLabel("Price:"), 0, 7)
         layout.addWidget(QLabel(str(order.price)), 0, 8)  # Convert int to str
 
+        self.setStyleSheet("font-size: 20px;")
+
         qr_button = QPushButton("QR 배정", self)
-        qr_button.setFixedSize(70, 70)
+        qr_button.setFixedSize(120, 120)
         qr_button.clicked.connect(lambda _, o=order: self.start_qr_scanner(o.id))
         layout.addWidget(qr_button, 0, 9, alignment=Qt.AlignRight)
+        qr_button.setStyleSheet("background-color: white;")
+
 
         group_box.setLayout(layout)
         self.left_layout.insertWidget(1, group_box)  # Add widget at index 1
