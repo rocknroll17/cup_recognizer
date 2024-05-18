@@ -143,11 +143,13 @@ class MyApp(QWidget):
         self.qr_label.hide()
         # QR 코드 인식이 성공적으로 되면 서버에 정보를 보내서 deploy
         username = self.current_username
-        if qr_reader.query_cup(qr_reader.cur, qr_reader.conn, qr_data):
+        if not qr_reader.query_cup(qr_reader.cur, qr_reader.conn, qr_data):
             qr_reader.deploy_cup(qr_reader.cur, qr_reader.conn, qr_data, username)
             if username in buttons:
                 buttons.remove(username)
                 self.remove_button(username)
+            else:
+                print("이미 대여된 컵입니다.")
         self.camera_label.hide()
         self.stop_qr_scanner()
 
