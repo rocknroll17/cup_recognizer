@@ -9,6 +9,7 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.middleware.cors import CORSMiddleware
+import requests
 import uvicorn
 import qr_reader
 import time
@@ -24,10 +25,10 @@ class order:
         self.price = price
 
     def __repr__(self):
-        return self.id
+        return str(self.id)
     
     def __str__(self):
-        return self.id
+        return str(self.id)
 
 
 # 현재 버튼 목록
@@ -50,13 +51,16 @@ async def index(request: Request):
 @api_app.post("/order_request")
 async def create_button(request: Request):
     global orders
-    data = await request.json()
-    id = data.get("id")
-    name = data.get("name")
-    original_price = data.get("original_price")
-    price = data.get("price")
-    orders.append(order(id, name, original_price, price))
-    print(orders)
+    datareq = await request.json()
+    datareq = datareq.get("orderItems")
+    print(datareq)
+    for i in datareq:
+        id = i.get("id")
+        name = i.get("name")
+        original_price = i.get("original_price")
+        price = i.get("price")
+        orders.append(order(id, name, original_price, price))
+        print(orders)
     return JSONResponse(content={"message": "Button created successfully"})
 
 # OpenCV QR 코드 스캐너 스레드
@@ -131,8 +135,8 @@ class MyApp(QWidget):
 
         self.scanner_thread = None
 
-    def start_qr_scanner(self, username):
-        self.current_username = username
+    def start_qr_scanner(self, id):
+        self.current_id = id
         self.qr_label.show()
         self.result_label.hide()
         self.scanner_thread = QRScannerThread()
@@ -160,11 +164,11 @@ class MyApp(QWidget):
         self.result_label.show()
         self.qr_label.hide()
         # QR 코드 인식이 성공적으로 되면 서버에 정보를 보내서 deploy
-        username = self.current_username
-        if not qr_reader.query_cup(qr_reader.cur, qr_reader.conn, qr_data):
-            qr_reader.deploy_cup(qr_reader.cur, qr_reader.conn, qr_data, username)
-            orders = [order for order in orders if order.id != username]
-            self.remove_button(username)
+        id = self.current_id
+        response = requests.post("http://10.210.56.158:5000/api/qr/req", json={"id":id, "cup_id": qr_data})
+        if response.status_code == 200:
+            orders = [order for order in orders if order.id != id]
+            self.remove_button(id)
         else:
             print("이미 대여된 컵입니다.")
         self.camera_label.hide()
@@ -186,7 +190,7 @@ class MyApp(QWidget):
 
 
     def add_button(self, order):
-        button = QPushButton(order.id, self)
+        button = QPushButton(str(order.id), self)
         button.setFixedSize(150, 50)
         button.clicked.connect(lambda _, u=order.id: self.start_qr_scanner(u))
         self.left_layout.addWidget(button)

@@ -5,6 +5,7 @@ from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QPushButton, QLa
 from PyQt5.QtCore import pyqtSlot, Qt, QMetaObject, Q_ARG, QThread, pyqtSignal
 from PyQt5.QtGui import QImage, QPixmap
 from pyzbar import pyzbar
+import requests
 import qr_reader
 
 class QRScannerThread(QThread):
@@ -135,11 +136,16 @@ class MyApp(QWidget):
 
     @pyqtSlot(str)
     def update_result_label(self, qr_data):
-        if qr_reader.query_cup(qr_reader.cur, qr_reader.conn, qr_data):
+        response = requests.post("http://10.210.56.158:5000/api/qr/"+qr_data)
+        if response.status_code == 200:
+            self.result_label.setText(f"컵이 반납되었습니다: {qr_data}")
+        else:
+            print("이미 대여되지 않은 컵입니다.")
+        """if qr_reader.query_cup(qr_reader.cur, qr_reader.conn, qr_data):
             qr_reader.return_cup(qr_reader.cur, qr_reader.conn, qr_data)
             self.result_label.setText(f"컵이 반납되었습니다: {qr_data}")
         else:
-            self.result_label.setText("대여되지 않은 컵입니다.")
+            self.result_label.setText("대여되지 않은 컵입니다.")"""
         self.result_label.show()
         self.video_label.hide()
 
