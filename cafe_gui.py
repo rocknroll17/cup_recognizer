@@ -106,6 +106,7 @@ class MyApp(QWidget):
         self.right_layout = QVBoxLayout()
         self.right_layout.setAlignment(Qt.AlignCenter)
 
+
         # 주문 내역 제목 추가
         self.title_label = QLabel('주문 내역', self)
         self.title_label.setAlignment(Qt.AlignTop)
@@ -128,8 +129,9 @@ class MyApp(QWidget):
         self.main_layout.addLayout(self.left_layout)
         self.main_layout.addLayout(self.right_layout)
         self.setLayout(self.main_layout)
-        self.setWindowTitle('CAFE_GUI')
+        self.setWindowTitle('')
         self.setGeometry(100, 100, 800, 600)
+        self.setStyleSheet("background-color: white")  
         self.show()
 
         # 타이머 설정
@@ -195,13 +197,14 @@ class MyApp(QWidget):
     def add_order_widget(self, order):
         group_box = QGroupBox(self)
         group_box.setProperty("order_info", order)
+        group_box.setStyleSheet("background-color : darkkhaki")
 
         layout = QGridLayout()
 
         # 이미지 경로 설정
         image_path = os.path.join('img', f"americano.jpg") 
         #   image_path = os.path.join('img', f"{order.name}.jpg") 로 추후에 변경할 것.
-        if os.path.exists(image_path):
+        if os.path.exists(image_path): 
             image_label = QLabel(self)
             pixmap = QPixmap(image_path)
             image_label.setPixmap(pixmap.scaled(100, 100, Qt.KeepAspectRatio))
