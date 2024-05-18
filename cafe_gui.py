@@ -226,18 +226,18 @@ class MyApp(QWidget):
 
         layout.addWidget(QLabel("ID:"), 0, 1)
         layout.addWidget(QLabel(str(order.id)), 0, 2)  # Convert int to str
-        layout.addWidget(QLabel("Name:"), 0, 3)
+        layout.addWidget(QLabel("상품명:"), 0, 3)
         layout.addWidget(QLabel(order.name), 0, 4)
-        layout.addWidget(QLabel("Original Price:"), 0, 5)
-        layout.addWidget(QLabel(str(order.original_price)), 0, 6)  # Convert int to str
-        layout.addWidget(QLabel("Price:"), 0, 7)
+        # layout.addWidget(QLabel("정가:"), 0, 5)
+        # layout.addWidget(QLabel(str(order.original_price)), 0, 6)  # Convert int to str
+        layout.addWidget(QLabel("  판매가:"), 0, 7)
         layout.addWidget(QLabel(str(order.price)), 0, 8)  # Convert int to str
       
         
-        self.setStyleSheet("font-size: 20px; ")
+        self.setStyleSheet("font-size: 30px; ")
        # self.setStyleSheet("color: white;")
 
-        qr_button = QPushButton("QR 배정", self)
+        qr_button = QPushButton("QR", self)
         qr_button.setFixedSize(120, 120)
         qr_button.clicked.connect(lambda _, o=order: self.start_qr_scanner(o.id))
         layout.addWidget(qr_button, 0, 9)
