@@ -127,7 +127,7 @@ class MyApp(QWidget):
         self.video_label.hide()
         self.assign_button.show()
         self.stop_qr_scanner()
-        cv2.destroyAllWindows()
+        #cv2.destroyAllWindows()
 
     def start_qr_scanner(self):
         self.qr_scanner_thread.start_scanning()
