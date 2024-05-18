@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from fastapi.templating import Jinja2Templates
-import cafe_qr
+import qr_reader
 
 # FastAPI 앱 생성
 app = FastAPI()
@@ -23,7 +23,7 @@ async def read_button(request: Request):
 async def qr_recognizer(request: Request):
     data = await request.json()
     username = data.get("username")
-    result = cafe_qr.qr_reading(username)
+    result = qr_reader.qr_reading(username)
     if result:
         global buttons
         buttons.remove(username)

@@ -1,15 +1,57 @@
 import sys
 import cv2
 import threading
-from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QPushButton, QLabel
-from PyQt5.QtCore import pyqtSlot, Qt, QMetaObject, Q_ARG
+from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QPushButton, QLabel, QHBoxLayout
+from PyQt5.QtCore import pyqtSlot, Qt, QMetaObject, Q_ARG, QThread, pyqtSignal
+from PyQt5.QtGui import QImage, QPixmap
 from pyzbar import pyzbar
+import qr_reader
+
+class QRScannerThread(QThread):
+    qr_data_found = pyqtSignal(str)
+    frame_ready = pyqtSignal(QImage)
+
+    def __init__(self):
+        super().__init__()
+        self.scanning = False
+
+    def run(self):
+        cap = cv2.VideoCapture(0)
+        while self.scanning:
+            ret, frame = cap.read()
+            if ret:
+                decoded_objects = pyzbar.decode(frame)
+                for obj in decoded_objects:
+                    qr_data = obj.data.decode("utf-8")
+                    self.qr_data_found.emit(qr_data)
+                    self.scanning = False
+                    break
+
+                # Convert the frame to QImage for displaying in QLabel
+                rgb_image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                h, w, ch = rgb_image.shape
+                bytes_per_line = ch * w
+                qt_image = QImage(rgb_image.data, w, h, bytes_per_line, QImage.Format_RGB888)
+                self.frame_ready.emit(qt_image)
+
+        cap.release()
+
+    def start_scanning(self):
+        self.scanning = True
+        self.start()
+
+    def stop_scanning(self):
+        self.scanning = False
+        self.wait()
 
 class MyApp(QWidget):
     def __init__(self):
         super().__init__()
 
         self.initUI()
+        self.qr_scanner_thread = QRScannerThread()
+        self.qr_scanner_thread.qr_data_found.connect(self.update_result_label)
+        self.qr_scanner_thread.frame_ready.connect(self.update_video_frame)
 
     def initUI(self):
         # 전체 레이아웃 설정
@@ -43,6 +85,12 @@ class MyApp(QWidget):
         self.result_label.hide()
         self.central_layout.addWidget(self.result_label)
 
+        # 비디오 프레임을 표시할 라벨
+        self.video_label = QLabel(self)
+        self.video_label.setAlignment(Qt.AlignCenter)
+        self.video_label.hide()
+        self.central_layout.addWidget(self.video_label)
+
         # 중앙 레이아웃을 메인 레이아웃에 추가
         self.main_layout.addLayout(self.central_layout)
         self.main_layout.setAlignment(Qt.AlignCenter)
@@ -52,7 +100,7 @@ class MyApp(QWidget):
 
         # 윈도우 속성 설정
         self.setWindowTitle('반납기')
-        self.setGeometry(300, 300, 300, 200)
+        self.setGeometry(300, 300, 300, 400)
         self.show()
 
     @pyqtSlot()
@@ -62,6 +110,7 @@ class MyApp(QWidget):
         self.qr_label.show()
         self.next_button.show()
         self.result_label.hide()
+        self.video_label.show()
         self.start_qr_scanner()
 
     @pyqtSlot()
@@ -70,45 +119,32 @@ class MyApp(QWidget):
         self.qr_label.hide()
         self.next_button.hide()
         self.result_label.hide()
+        self.video_label.hide()
         self.assign_button.show()
         self.stop_qr_scanner()
 
     def start_qr_scanner(self):
-        self.scanning = True
-        self.thread = threading.Thread(target=self.qr_scanner)
-        self.thread.start()
+        self.qr_scanner_thread.start_scanning()
 
     def stop_qr_scanner(self):
-        self.scanning = False
+        self.qr_scanner_thread.stop_scanning()
 
-    def qr_scanner(self):
-        cap = cv2.VideoCapture(0)
-        while self.scanning:
-            ret, frame = cap.read()
-            if ret:
-                decoded_objects = pyzbar.decode(frame)
-                for obj in decoded_objects:
-                    qr_data = obj.data.decode("utf-8")
-                    QMetaObject.invokeMethod(self, "update_result_label", Qt.QueuedConnection, Q_ARG(str, qr_data))
-                    self.stop_qr_scanner()
-                    break
-
-                # Display the frame (for debugging purposes)
-                cv2.imshow("QR Code Scanner", frame)
-                if cv2.waitKey(1) & 0xFF == ord('q'):
-                    break
-
-        cap.release()
-        cv2.destroyAllWindows()
+    @pyqtSlot(QImage)
+    def update_video_frame(self, qt_image):
+        self.video_label.setPixmap(QPixmap.fromImage(qt_image))
 
     @pyqtSlot(str)
     def update_result_label(self, qr_data):
-        self.result_label.setText(f"QR 코드 인식: {qr_data}")
+        if qr_reader.query_cup(qr_reader.cur, qr_reader.conn, qr_data):
+            qr_reader.return_cup(qr_reader.cur, qr_reader.conn, qr_data)
+            self.result_label.setText(f"컵이 반납되었습니다: {qr_data}")
+        else:
+            self.result_label.setText("대여되지 않은 컵입니다.")
         self.result_label.show()
+        self.video_label.hide()
 
     def closeEvent(self, event):
-        if hasattr(self, 'scanning') and self.scanning:
-            self.stop_qr_scanner()
+        self.stop_qr_scanner()
         event.accept()
 
 if __name__ == '__main__':

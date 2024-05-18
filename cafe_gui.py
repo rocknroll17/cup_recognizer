@@ -4,6 +4,8 @@ import threading
 from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QPushButton, QLabel
 from PyQt5.QtCore import pyqtSlot, Qt, QMetaObject, Q_ARG
 from pyzbar import pyzbar
+import qr_reader
+import random
 
 class MyApp(QWidget):
     def __init__(self):
@@ -103,7 +105,11 @@ class MyApp(QWidget):
 
     @pyqtSlot(str)
     def update_result_label(self, qr_data):
-        self.result_label.setText(f"QR 코드 인식: {qr_data}")
+        if not qr_reader.query_cup(qr_reader.cur, qr_reader.conn, qr_data):
+            qr_reader.deploy_cup(qr_reader.cur, qr_reader.conn, qr_data, "user"+str(random.randint(1,10)))
+            self.result_label.setText(f"컵이 배정되었습니다: {qr_data}")
+        else:
+            self.result_label.setText("반납되지 않은 컵입니다.")
         self.result_label.show()
 
     def closeEvent(self, event):
