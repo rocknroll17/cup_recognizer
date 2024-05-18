@@ -16,8 +16,22 @@ import time
 # FastAPI 앱 생성
 api_app = FastAPI()
 
+class order:
+    def __init__(self, id, name, original_price, price):
+        self.id = id
+        self.name = name
+        self.original_price = original_price
+        self.price = price
+
+    def __repr__(self):
+        return self.id
+    
+    def __str__(self):
+        return self.id
+
+
 # 현재 버튼 목록
-buttons = []
+orders = []
 templates = Jinja2Templates(directory="templates")
 
 # CORS 설정
@@ -33,12 +47,16 @@ api_app.add_middleware(
 async def index(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
 
-@api_app.post("/")
+@api_app.post("/order_request")
 async def create_button(request: Request):
-    global buttons
+    global orders
     data = await request.json()
-    username = data.get("username")
-    buttons.append(username)
+    id = data.get("id")
+    name = data.get("name")
+    original_price = data.get("original_price")
+    price = data.get("price")
+    orders.append(order(id, name, original_price, price))
+    print(orders)
     return JSONResponse(content={"message": "Button created successfully"})
 
 # OpenCV QR 코드 스캐너 스레드
@@ -137,7 +155,7 @@ class MyApp(QWidget):
         
     @pyqtSlot(str)
     def handle_qr_result(self, qr_data):
-        global buttons
+        global orders
         self.result_label.setText(f"스캔된 QR 데이터: {qr_data}")
         self.result_label.show()
         self.qr_label.hide()
@@ -145,8 +163,8 @@ class MyApp(QWidget):
         username = self.current_username
         if not qr_reader.query_cup(qr_reader.cur, qr_reader.conn, qr_data):
             qr_reader.deploy_cup(qr_reader.cur, qr_reader.conn, qr_data, username)
-            if username in buttons:
-                buttons.remove(username)
+            if username in orders:
+                orders.remove(username)
                 self.remove_button(username)
             else:
                 print("이미 대여된 컵입니다.")
@@ -154,16 +172,16 @@ class MyApp(QWidget):
         self.stop_qr_scanner()
 
     def update_buttons(self):
-        global buttons
+        global orders
         current_buttons = [btn.text() for btn in self.findChildren(QPushButton)]
 
         # Remove buttons that are not in the updated buttons list
         for btn in current_buttons:
-            if btn not in buttons:
+            if btn not in orders:
                 self.remove_button(btn)
 
         # Add buttons that are in the updated buttons list but not currently displayed
-        for username in buttons:
+        for username in orders:
             if username not in current_buttons:
                 self.add_button(username)
 
