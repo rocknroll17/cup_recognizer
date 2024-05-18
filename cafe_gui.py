@@ -102,8 +102,8 @@ class MyApp(QWidget):
     def initUI(self):
         self.main_layout = QHBoxLayout()
         self.left_layout = QVBoxLayout()
+        self.left_layout.setAlignment(Qt.AlignTop)
         self.right_layout = QVBoxLayout()
-        self.left_layout.setAlignment(Qt.AlignLeft)
         self.right_layout.setAlignment(Qt.AlignCenter)
 
 
@@ -119,12 +119,14 @@ class MyApp(QWidget):
         # self.left_layout.addWidget(self.qr_label)
 
         self.result_label = QLabel('', self)
-        self.result_label.setAlignment(Qt.AlignCenter)
+        self.result_label.setAlignment(Qt.AlignLeft)
         self.result_label.hide()
         self.left_layout.addWidget(self.result_label)
 
         self.camera_label = QLabel(self)
+        self.right_layout.addWidget(QLabel("                                                            "))
         self.right_layout.addWidget(self.camera_label)
+
 
         # 중앙의 검은색 줄 추가
         self.divider = QFrame()
@@ -140,7 +142,7 @@ class MyApp(QWidget):
         self.setWindowTitle('')
         self.setGeometry(100, 100, 800, 600)
         self.setStyleSheet("background-color: white")  
-        self.showMaximized()
+        self.show()
 
         # 타이머 설정
         self.timer = QTimer(self)
@@ -235,14 +237,12 @@ class MyApp(QWidget):
         qr_button = QPushButton("QR 배정", self)
         qr_button.setFixedSize(120, 120)
         qr_button.clicked.connect(lambda _, o=order: self.start_qr_scanner(o.id))
-        layout.addWidget(qr_button, 0, 9, alignment=Qt.AlignRight)
+        layout.addWidget(qr_button, 0, 9)
         qr_button.setStyleSheet("background-color: white;")
 
-        group_box_layout = QHBoxLayout()  # QHBoxLayout 생성
-        group_box_layout.addWidget(group_box)  # group_box를 QHBoxLayout에 추가
-        group_box.setLayout(layout)  # layout을 group_box에 설정
 
-        self.left_layout.insertLayout(1, group_box_layout)  # Add layout at index 1
+        group_box.setLayout(layout)
+        self.left_layout.insertWidget(1, group_box)  # Add widget at index 1
 
     def remove_order_widget(self, order_id):
         for group_box in self.findChildren(QGroupBox):
@@ -267,7 +267,7 @@ class MyApp(QWidget):
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     fontDb=QFontDatabase()
-    fontDb.addApplicationFont("./font/gamtan_regular.ttf")
+    fontDb.addApplicationFont(os.path.join("./font/gamtan_regular.ttf"))
     app.setFont(QFont('gamtan_regular.ttf'))
     ex = MyApp()
     sys.exit(app.exec_())
