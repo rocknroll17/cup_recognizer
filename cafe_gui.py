@@ -141,10 +141,10 @@ class MyApp(QWidget):
         self.result_label.setText(f"스캔된 QR 데이터: {qr_data}")
         self.result_label.show()
         self.qr_label.hide()
-
         # QR 코드 인식이 성공적으로 되면 서버에 정보를 보내서 deploy
         username = self.current_username
-        if qr_reader.deploy_cup(qr_reader.cur, qr_reader.conn, username, qr_data):  # qr_reader.deploy_cup을 실제로 구현 필요
+        if qr_reader.query_cup(qr_reader.cur, qr_reader.conn, qr_data):
+            qr_reader.deploy_cup(qr_reader.cur, qr_reader.conn, qr_data, username)
             if username in buttons:
                 buttons.remove(username)
                 self.remove_button(username)
@@ -164,6 +164,7 @@ class MyApp(QWidget):
         for username in buttons:
             if username not in current_buttons:
                 self.add_button(username)
+
 
     def add_button(self, username):
         button = QPushButton(username, self)
