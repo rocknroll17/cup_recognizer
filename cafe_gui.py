@@ -95,6 +95,7 @@ class QRScannerThread(QThread):
 class MyApp(QWidget):
     def __init__(self):
         super().__init__()
+
         self.initUI()
         self.start_server()
 
@@ -108,6 +109,7 @@ class MyApp(QWidget):
 
         # 주문 내역 제목 추가
         self.title_label = QLabel('주문 내역', self)
+        self.title_label.setFont(QFont("gamtan_regular",20))
         self.title_label.setAlignment(Qt.AlignTop)
         self.title_label.setStyleSheet("font-size: 30px;")
         self.left_layout.addWidget(self.title_label)
@@ -140,8 +142,8 @@ class MyApp(QWidget):
         self.setLayout(self.main_layout)
         self.setWindowTitle('')
         self.setGeometry(100, 100, 800, 600)
-        self.setStyleSheet("background-color: #EAE0CC")
-        self.showMaximized()
+        self.setStyleSheet("background-color: white")  
+        self.show()
 
         # 타이머 설정
         self.timer = QTimer(self)
@@ -206,14 +208,14 @@ class MyApp(QWidget):
     def add_order_widget(self, order):
         group_box = QGroupBox(self)
         group_box.setProperty("order_info", order)
-        group_box.setStyleSheet("background-color : khaki")
+        group_box.setStyleSheet("background-color : #AF8F6F")
         group_box.setFixedSize(1000, 200)
 
         layout = QGridLayout()
 
         # 이미지 경로 설정
-        image_path = os.path.join('img', f"americano.jpg") 
-        #   image_path = os.path.join('img', f"{order.name}.jpg") 로 추후에 변경할 것.
+        #image_path = os.path.join('img', f"americano.jpg") 
+        image_path = os.path.join('img', f"{order.name}.jpg") #로 추후에 변경할 것.
         if os.path.exists(image_path): 
             image_label = QLabel(self)
             pixmap = QPixmap(image_path)
@@ -230,18 +232,21 @@ class MyApp(QWidget):
         layout.addWidget(QLabel(str(order.original_price)), 0, 6)  # Convert int to str
         layout.addWidget(QLabel("Price:"), 0, 7)
         layout.addWidget(QLabel(str(order.price)), 0, 8)  # Convert int to str
-
-        self.setStyleSheet("font-size: 20px;")
+      
+        
+        self.setStyleSheet("font-size: 20px; ")
+       # self.setStyleSheet("color: white;")
 
         qr_button = QPushButton("QR 배정", self)
         qr_button.setFixedSize(120, 120)
         qr_button.clicked.connect(lambda _, o=order: self.start_qr_scanner(o.id))
         layout.addWidget(qr_button, 0, 9)
-        qr_button.setStyleSheet("background-color: #C9ADA1;")
+        qr_button.setStyleSheet("background-color: #F8F4E1;")
 
 
         group_box.setLayout(layout)
-        self.left_layout.addWidget(group_box)  # Add widget at index 1
+
+        self.left_layout.insertWidget(1, group_box)  # Add widget at index 1
 
     def remove_order_widget(self, order_id):
         for group_box in self.findChildren(QGroupBox):
@@ -264,9 +269,13 @@ class MyApp(QWidget):
         event.accept()
 
 if __name__ == '__main__':
-    app = QApplication(sys.argv)
-    fontDb=QFontDatabase()
-    fontDb.addApplicationFont(os.path.join("./font/gamtan_regular.ttf"))
-    app.setFont(QFont('gamtan_regular.ttf'))
-    ex = MyApp()
-    sys.exit(app.exec_())
+     app = QApplication(sys.argv)
+     fontDb = QFontDatabase()
+     fontDb.addApplicationFont(os.path.join("font",f"gamtan_regular.ttf"))
+     # Set application font
+     font = QFont("gamtan_regular",20,20,False)
+     print(font.toString())
+     app.setFont(font)
+     
+     ex = MyApp()
+     sys.exit(app.exec_())
