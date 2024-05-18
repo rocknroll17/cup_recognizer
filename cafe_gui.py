@@ -1,7 +1,7 @@
 import sys
 import cv2
 import threading
-from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel, QGroupBox, QGridLayout
+from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel, QGroupBox, QGridLayout, QFrame
 from PyQt5.QtCore import pyqtSlot, Qt, QTimer, QThread, pyqtSignal
 from PyQt5.QtGui import QImage, QPixmap, QFontDatabase, QFont
 from pyzbar import pyzbar
@@ -113,10 +113,10 @@ class MyApp(QWidget):
         self.title_label.setStyleSheet("font-size: 30px;")
         self.left_layout.addWidget(self.title_label)
 
-        self.qr_label = QLabel('QR코드를 인식하세요', self)
-        self.qr_label.setAlignment(Qt.AlignCenter)
-        self.qr_label.hide()
-        self.left_layout.addWidget(self.qr_label)
+        # self.qr_label = QLabel('QR코드를 인식하세요', self)
+        # self.qr_label.setAlignment(Qt.AlignCenter)
+        # self.qr_label.hide()
+        # self.left_layout.addWidget(self.qr_label)
 
         self.result_label = QLabel('', self)
         self.result_label.setAlignment(Qt.AlignCenter)
@@ -126,7 +126,15 @@ class MyApp(QWidget):
         self.camera_label = QLabel(self)
         self.right_layout.addWidget(self.camera_label)
 
+        # 중앙의 검은색 줄 추가
+        self.divider = QFrame()
+        self.divider.setFrameShape(QFrame.VLine)
+        self.divider.setFrameShadow(QFrame.Sunken)
+        self.divider.setLineWidth(2)
+        self.divider.setFixedWidth(2)
+
         self.main_layout.addLayout(self.left_layout)
+        self.main_layout.addWidget(self.divider)
         self.main_layout.addLayout(self.right_layout)
         self.setLayout(self.main_layout)
         self.setWindowTitle('')
@@ -143,7 +151,7 @@ class MyApp(QWidget):
 
     def start_qr_scanner(self, id):
         self.current_id = id
-        self.qr_label.show()
+        # self.qr_label.show()
         self.result_label.hide()
         self.scanner_thread = QRScannerThread()
         self.scanner_thread.qr_data_signal.connect(self.handle_qr_result)
@@ -166,9 +174,9 @@ class MyApp(QWidget):
     @pyqtSlot(str)
     def handle_qr_result(self, qr_data):
         global orders
-        self.result_label.setText(f"스캔된 QR 데이터: {qr_data}")
-        self.result_label.show()
-        self.qr_label.hide()
+        # self.result_label.setText(f"스캔된 QR 데이터: {qr_data}")
+        # self.result_label.show()
+       # self.qr_label.hide()
         # QR 코드 인식이 성공적으로 되면 서버에 정보를 보내서 deploy
         id = self.current_id
         response = requests.post("http://10.210.56.158:5000/api/qr/req", json={"id": id, "cup_id": qr_data})
@@ -258,6 +266,6 @@ if __name__ == '__main__':
     app = QApplication(sys.argv)
     fontDb=QFontDatabase()
     fontDb.addApplicationFont("./font/gamtan_regular.ttf")
-    app.setFont(QFont('gamtan_regular'))
+    app.setFont(QFont('gamtan_regular.ttf'))
     ex = MyApp()
     sys.exit(app.exec_())
