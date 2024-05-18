@@ -143,7 +143,7 @@ class MyApp(QWidget):
         self.setWindowTitle('')
         self.setGeometry(100, 100, 800, 600)
         self.setStyleSheet("background-color: white")  
-        self.show()
+        self.showMaximized()
 
         # 타이머 설정
         self.timer = QTimer(self)
