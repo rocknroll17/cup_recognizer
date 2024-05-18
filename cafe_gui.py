@@ -95,7 +95,6 @@ class QRScannerThread(QThread):
 class MyApp(QWidget):
     def __init__(self):
         super().__init__()
-
         self.initUI()
         self.start_server()
 
@@ -141,8 +140,8 @@ class MyApp(QWidget):
         self.setLayout(self.main_layout)
         self.setWindowTitle('')
         self.setGeometry(100, 100, 800, 600)
-        self.setStyleSheet("background-color: white")  
-        self.show()
+        self.setStyleSheet("background-color: #EAE0CC")
+        self.showMaximized()
 
         # 타이머 설정
         self.timer = QTimer(self)
@@ -238,11 +237,11 @@ class MyApp(QWidget):
         qr_button.setFixedSize(120, 120)
         qr_button.clicked.connect(lambda _, o=order: self.start_qr_scanner(o.id))
         layout.addWidget(qr_button, 0, 9)
-        qr_button.setStyleSheet("background-color: white;")
+        qr_button.setStyleSheet("background-color: #C9ADA1;")
 
 
         group_box.setLayout(layout)
-        self.left_layout.insertWidget(1, group_box)  # Add widget at index 1
+        self.left_layout.addWidget(group_box)  # Add widget at index 1
 
     def remove_order_widget(self, order_id):
         for group_box in self.findChildren(QGroupBox):

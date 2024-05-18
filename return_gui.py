@@ -126,29 +126,34 @@ class MyApp(QWidget):
         self.result_label.hide()
         self.video_label.hide()
         self.assign_button.show()
-        self.stop_qr_scanner()
-        #cv2.destroyAllWindows()
+        
 
     def start_qr_scanner(self):
+        self.scanning = True
         self.qr_scanner_thread.start_scanning()
 
     def stop_qr_scanner(self):
+        self.scanning = False
         self.qr_scanner_thread.stop_scanning()
 
     @pyqtSlot(QImage)
     def update_video_frame(self, qt_image):
-        # 비디오 프레임을 QLabel에 표시합니다.
-        self.video_label.setPixmap(QPixmap.fromImage(qt_image))
+        if self.scanning:
+            # 비디오 프레임을 QLabel에 표시합니다.
+            self.video_label.setPixmap(QPixmap.fromImage(qt_image))
 
-        # 비디오 프레임에 맞게 QLabel의 크기를 조정합니다.
-        self.video_label.setFixedSize(qt_image.width(), qt_image.height())
+            # 비디오 프레임에 맞게 QLabel의 크기를 조정합니다.
+            self.video_label.setFixedSize(qt_image.width(), qt_image.height())
 
     @pyqtSlot(str)
     def update_result_label(self, qr_data):
         response = requests.post("http://10.210.56.158:5000/api/qr/"+qr_data)
         self.qr_label.hide()
+        self.stop_qr_scanner()
         if response.status_code == 200:
             self.result_label.setText(f"컵이 반납되었습니다: {qr_data}")
+        elif response.status_code == 400:
+            self.result_label.setText(f"연체 되었습니다: {qr_data}")
         else:
             self.result_label.setText("대여되지 않은 컵입니다.")
         self.result_label.show()
@@ -157,15 +162,6 @@ class MyApp(QWidget):
 
     def closeEvent(self, event):
         sys.exit()
-        """self.timer.stop()
-        self.stop_qr_scanner()
-        self.qr_scanner_thread.quit()  # 스레드 종료 요청
-        self.qr_scanner_thread.wait()  # 스레드가 종료될 때까지 대기
-        event.accept()
-        cv2.destroyAllWindows()  # OpenCV 윈도우 닫기"""
-
-
-
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
