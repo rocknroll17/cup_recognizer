@@ -1,8 +1,8 @@
 import sys
 import cv2
 import threading
-from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel
-from PyQt5.QtCore import pyqtSlot, Qt, QMetaObject, Q_ARG, QTimer, QThread, pyqtSignal
+from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel, QGroupBox, QGridLayout
+from PyQt5.QtCore import pyqtSlot, Qt, QTimer, QThread, pyqtSignal
 from PyQt5.QtGui import QImage, QPixmap
 from pyzbar import pyzbar
 from fastapi import FastAPI, Request
@@ -11,13 +11,13 @@ from fastapi.templating import Jinja2Templates
 from fastapi.middleware.cors import CORSMiddleware
 import requests
 import uvicorn
-import qr_reader
 import time
+import os
 
 # FastAPI 앱 생성
 api_app = FastAPI()
 
-class order:
+class Order:
     def __init__(self, id, name, original_price, price):
         self.id = id
         self.name = name
@@ -29,7 +29,6 @@ class order:
     
     def __str__(self):
         return str(self.id)
-
 
 # 현재 버튼 목록
 orders = []
@@ -59,7 +58,7 @@ async def create_button(request: Request):
         name = i.get("name")
         original_price = i.get("original_price")
         price = i.get("price")
-        orders.append(order(id, name, original_price, price))
+        orders.append(Order(id, name, original_price, price))
         print(orders)
     return JSONResponse(content={"message": "Button created successfully"})
 
@@ -93,7 +92,6 @@ class QRScannerThread(QThread):
         self.wait()
 
 # PyQt5 앱 생성
-# PyQt5 앱 생성
 class MyApp(QWidget):
     def __init__(self):
         super().__init__()
@@ -104,9 +102,15 @@ class MyApp(QWidget):
     def initUI(self):
         self.main_layout = QHBoxLayout()
         self.left_layout = QVBoxLayout()
-        self.left_layout.setAlignment(Qt.AlignCenter)
+        self.left_layout.setAlignment(Qt.AlignTop)
         self.right_layout = QVBoxLayout()
         self.right_layout.setAlignment(Qt.AlignCenter)
+
+        # 주문 내역 제목 추가
+        self.title_label = QLabel('주문 내역', self)
+        self.title_label.setAlignment(Qt.AlignTop)
+        self.title_label.setStyleSheet("font-size: 30px;")
+        self.left_layout.addWidget(self.title_label)
 
         self.qr_label = QLabel('QR코드를 인식하세요', self)
         self.qr_label.setAlignment(Qt.AlignCenter)
@@ -124,7 +128,7 @@ class MyApp(QWidget):
         self.main_layout.addLayout(self.left_layout)
         self.main_layout.addLayout(self.right_layout)
         self.setLayout(self.main_layout)
-        self.setWindowTitle('QR 코드 인식기')
+        self.setWindowTitle('CAFE_GUI')
         self.setGeometry(100, 100, 800, 600)
         self.show()
 
@@ -165,10 +169,10 @@ class MyApp(QWidget):
         self.qr_label.hide()
         # QR 코드 인식이 성공적으로 되면 서버에 정보를 보내서 deploy
         id = self.current_id
-        response = requests.post("http://10.210.56.158:5000/api/qr/req", json={"id":id, "cup_id": qr_data})
+        response = requests.post("http://10.210.56.158:5000/api/qr/req", json={"id": id, "cup_id": qr_data})
         if response.status_code == 200:
             orders = [order for order in orders if order.id != id]
-            self.remove_button(id)
+            self.remove_order_widget(id)
         else:
             print("이미 대여된 컵입니다.")
         self.camera_label.hide()
@@ -176,30 +180,57 @@ class MyApp(QWidget):
 
     def update_buttons(self):
         global orders
-        current_buttons = [btn.text() for btn in self.findChildren(QPushButton)]
+        current_orders = [gb.property("order_info").id for gb in self.findChildren(QGroupBox)]
 
-        # Remove buttons that are not in the updated orders list
-        for btn in current_buttons:
-            if btn not in [order.id for order in orders]:
-                self.remove_button(btn)
+        # Remove orders that are not in the updated orders list
+        for order_id in current_orders:
+            if order_id not in [order.id for order in orders]:
+                self.remove_order_widget(order_id)
 
-        # Add buttons that are in the updated orders list but not currently displayed
+        # Add orders that are in the updated orders list but not currently displayed
         for order in orders:
-            if order.id not in current_buttons:
-                self.add_button(order)
+            if order.id not in current_orders:
+                self.add_order_widget(order)
 
+    def add_order_widget(self, order):
+        group_box = QGroupBox(self)
+        group_box.setProperty("order_info", order)
 
-    def add_button(self, order):
-        button = QPushButton(str(order.id), self)
-        button.setFixedSize(150, 50)
-        button.clicked.connect(lambda _, u=order.id: self.start_qr_scanner(u))
-        self.left_layout.addWidget(button)
+        layout = QGridLayout()
 
-    def remove_button(self, username):
-        for btn in self.findChildren(QPushButton):
-            if btn.text() == username:
-                self.left_layout.removeWidget(btn)
-                btn.deleteLater()
+        # 이미지 경로 설정
+        image_path = os.path.join('img', f"americano.jpg") 
+        #   image_path = os.path.join('img', f"{order.name}.jpg") 로 추후에 변경할 것.
+        if os.path.exists(image_path):
+            image_label = QLabel(self)
+            pixmap = QPixmap(image_path)
+            image_label.setPixmap(pixmap.scaled(100, 100, Qt.KeepAspectRatio))
+            layout.addWidget(image_label, 0, 0)
+        else:
+            print(f"Image not found: {image_path}")
+
+        layout.addWidget(QLabel("ID:"), 0, 1)
+        layout.addWidget(QLabel(str(order.id)), 0, 2)  # Convert int to str
+        layout.addWidget(QLabel("Name:"), 0, 3)
+        layout.addWidget(QLabel(order.name), 0, 4)
+        layout.addWidget(QLabel("Original Price:"), 0, 5)
+        layout.addWidget(QLabel(str(order.original_price)), 0, 6)  # Convert int to str
+        layout.addWidget(QLabel("Price:"), 0, 7)
+        layout.addWidget(QLabel(str(order.price)), 0, 8)  # Convert int to str
+
+        qr_button = QPushButton("QR 배정", self)
+        qr_button.setFixedSize(70, 70)
+        qr_button.clicked.connect(lambda _, o=order: self.start_qr_scanner(o.id))
+        layout.addWidget(qr_button, 0, 9, alignment=Qt.AlignRight)
+
+        group_box.setLayout(layout)
+        self.left_layout.insertWidget(1, group_box)  # Add widget at index 1
+
+    def remove_order_widget(self, order_id):
+        for group_box in self.findChildren(QGroupBox):
+            if group_box.property("order_info").id == order_id:
+                self.left_layout.removeWidget(group_box)
+                group_box.deleteLater()
                 break
 
     def start_server(self):
