@@ -163,11 +163,10 @@ class MyApp(QWidget):
         username = self.current_username
         if not qr_reader.query_cup(qr_reader.cur, qr_reader.conn, qr_data):
             qr_reader.deploy_cup(qr_reader.cur, qr_reader.conn, qr_data, username)
-            if username in orders:
-                orders.remove(username)
-                self.remove_button(username)
-            else:
-                print("이미 대여된 컵입니다.")
+            orders = [order for order in orders if order.id != username]
+            self.remove_button(username)
+        else:
+            print("이미 대여된 컵입니다.")
         self.camera_label.hide()
         self.stop_qr_scanner()
 
@@ -175,21 +174,21 @@ class MyApp(QWidget):
         global orders
         current_buttons = [btn.text() for btn in self.findChildren(QPushButton)]
 
-        # Remove buttons that are not in the updated buttons list
+        # Remove buttons that are not in the updated orders list
         for btn in current_buttons:
-            if btn not in orders:
+            if btn not in [order.id for order in orders]:
                 self.remove_button(btn)
 
-        # Add buttons that are in the updated buttons list but not currently displayed
-        for username in orders:
-            if username not in current_buttons:
-                self.add_button(username)
+        # Add buttons that are in the updated orders list but not currently displayed
+        for order in orders:
+            if order.id not in current_buttons:
+                self.add_button(order)
 
 
-    def add_button(self, username):
-        button = QPushButton(username, self)
+    def add_button(self, order):
+        button = QPushButton(order.id, self)
         button.setFixedSize(150, 50)
-        button.clicked.connect(lambda _, u=username: self.start_qr_scanner(u))
+        button.clicked.connect(lambda _, u=order.id: self.start_qr_scanner(u))
         self.left_layout.addWidget(button)
 
     def remove_button(self, username):
