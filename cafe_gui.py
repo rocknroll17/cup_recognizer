@@ -1,7 +1,7 @@
 import sys
 import cv2
 import threading
-from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel, QGroupBox, QGridLayout, QFrame, QScrollArea
+from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel, QGroupBox, QGridLayout, QFrame
 from PyQt5.QtCore import pyqtSlot, Qt, QTimer, QThread, pyqtSignal
 from PyQt5.QtGui import QImage, QPixmap, QFontDatabase, QFont
 from pyzbar import pyzbar
@@ -102,7 +102,10 @@ class MyApp(QWidget):
     def initUI(self):
         self.main_layout = QHBoxLayout()
         self.left_layout = QVBoxLayout()
-        self.left_layout.setAlignment(Qt.AlignTop)
+        self.right_layout = QVBoxLayout()
+        self.left_layout.setAlignment(Qt.AlignLeft)
+        self.right_layout.setAlignment(Qt.AlignCenter)
+
 
         # 주문 내역 제목 추가
         self.title_label = QLabel('주문 내역', self)
@@ -110,22 +113,10 @@ class MyApp(QWidget):
         self.title_label.setStyleSheet("font-size: 30px;")
         self.left_layout.addWidget(self.title_label)
 
-        # 주문 내역을 담을 스크롤 영역 생성
-        # 주문 내역을 담을 스크롤 영역 생성
-        self.order_scroll_area = QScrollArea()
-        self.order_scroll_area.setWidgetResizable(True)
-        self.order_scroll_content = QWidget()
-        self.order_scroll_layout = QVBoxLayout(self.order_scroll_content)
-        self.order_scroll_content.setLayout(self.order_scroll_layout)
-        self.order_scroll_area.setWidget(self.order_scroll_content)
-
-        # 추가된 부분: 스크롤 영역의 크기를 설정합니다.
-        self.order_scroll_area.setFixedWidth(1050)  # 원하는 너비로 설정
-
-        self.left_layout.addWidget(self.order_scroll_area)
-
-        self.right_layout = QVBoxLayout()
-        self.right_layout.setAlignment(Qt.AlignCenter)
+        # self.qr_label = QLabel('QR코드를 인식하세요', self)
+        # self.qr_label.setAlignment(Qt.AlignCenter)
+        # self.qr_label.hide()
+        # self.left_layout.addWidget(self.qr_label)
 
         self.result_label = QLabel('', self)
         self.result_label.setAlignment(Qt.AlignCenter)
@@ -142,15 +133,13 @@ class MyApp(QWidget):
         self.divider.setLineWidth(2)
         self.divider.setFixedWidth(2)
 
-        # 왼쪽 레이아웃을 왼쪽에 붙이도록 정렬 옵션 추가
-        self.main_layout.addLayout(self.left_layout, Qt.AlignLeft)
+        self.main_layout.addLayout(self.left_layout)
         self.main_layout.addWidget(self.divider)
-        self.main_layout.addLayout(self.right_layout, Qt.AlignRight)
-
+        self.main_layout.addLayout(self.right_layout)
         self.setLayout(self.main_layout)
         self.setWindowTitle('')
         self.setGeometry(100, 100, 800, 600)
-        self.setStyleSheet("background-color: white")
+        self.setStyleSheet("background-color: white")  
         self.showMaximized()
 
         # 타이머 설정
@@ -162,6 +151,7 @@ class MyApp(QWidget):
 
     def start_qr_scanner(self, id):
         self.current_id = id
+        # self.qr_label.show()
         self.result_label.hide()
         self.scanner_thread = QRScannerThread()
         self.scanner_thread.qr_data_signal.connect(self.handle_qr_result)
@@ -184,6 +174,10 @@ class MyApp(QWidget):
     @pyqtSlot(str)
     def handle_qr_result(self, qr_data):
         global orders
+        # self.result_label.setText(f"스캔된 QR 데이터: {qr_data}")
+        # self.result_label.show()
+       # self.qr_label.hide()
+        # QR 코드 인식이 성공적으로 되면 서버에 정보를 보내서 deploy
         id = self.current_id
         response = requests.post("http://10.210.56.158:5000/api/qr/req", json={"id": id, "cup_id": qr_data})
         if response.status_code == 200:
@@ -196,7 +190,7 @@ class MyApp(QWidget):
 
     def update_buttons(self):
         global orders
-        current_orders = [gb.property("order_info").id for gb in self.order_scroll_content.findChildren(QGroupBox)]
+        current_orders = [gb.property("order_info").id for gb in self.findChildren(QGroupBox)]
 
         # Remove orders that are not in the updated orders list
         for order_id in current_orders:
@@ -209,7 +203,7 @@ class MyApp(QWidget):
                 self.add_order_widget(order)
 
     def add_order_widget(self, order):
-        group_box = QGroupBox(self.order_scroll_content)
+        group_box = QGroupBox(self)
         group_box.setProperty("order_info", order)
         group_box.setStyleSheet("background-color : khaki")
         group_box.setFixedSize(1000, 200)
@@ -244,8 +238,11 @@ class MyApp(QWidget):
         layout.addWidget(qr_button, 0, 9, alignment=Qt.AlignRight)
         qr_button.setStyleSheet("background-color: white;")
 
-        group_box.setLayout(layout)
-        self.order_scroll_layout.addWidget(group_box)
+        group_box_layout = QHBoxLayout()  # QHBoxLayout 생성
+        group_box_layout.addWidget(group_box)  # group_box를 QHBoxLayout에 추가
+        group_box.setLayout(layout)  # layout을 group_box에 설정
+
+        self.left_layout.insertLayout(1, group_box_layout)  # Add layout at index 1
 
     def remove_order_widget(self, order_id):
         for group_box in self.findChildren(QGroupBox):
