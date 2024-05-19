@@ -106,7 +106,7 @@ class MyApp(QWidget):
 
 
         # 주문 내역 제목 추가
-        self.title_label = QLabel('주문 내역', self)
+        self.title_label = QLabel('주문 내역 - DDOS Coffee', self)
         self.title_label.setFont(QFont("gamtan_regular",20))
         self.title_label.setAlignment(Qt.AlignTop)
         self.title_label.setStyleSheet("font-size: 30px;")
